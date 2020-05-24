@@ -33,4 +33,7 @@ app.post('/sendEmail',[
         });
 });
 
+app.get('/emailValidation', (req: any, res: any) => {
+    res.send(emailValidationSchema);
+});
 exports.api = functions.https.onRequest(app);
