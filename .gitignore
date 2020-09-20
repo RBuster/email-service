@@ -106,3 +106,5 @@ dist
 **/node_modules/*
 **/.firebaserc
 **/package-lock.json
+
+.vscode
