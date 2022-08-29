@@ -1,22 +1,23 @@
-import * as functions from 'firebase-functions';
 import {emailService} from './lib/resources/emailRA';
 import { Email } from './lib/models/email';
 import * as Ajv from 'ajv';
 import { ResponseCodes } from './lib/const/codes';
 import { emailValidationSchema } from './lib/validation/emailValidationConfig';
-const express = require('express');
-const cors = require('cors');
+import express = require('express');
+import cors = require('cors');
 
 require('dotenv').config();
 
 const app = express();
+const port = 3000;
+
 app.use(cors({ origin: true }));
 app.post('/sendEmail', (req: any, res: any) => {
-    let reqBody = req.body.data
+    const reqBody = req.body.data
     console.info('parsed', reqBody);
-    let ajv = new Ajv({allErrors: true});
-    let validate = ajv.compile(emailValidationSchema);
-    let valid = validate(reqBody);
+    const ajv = new Ajv({allErrors: true});
+    const validate = ajv.compile(emailValidationSchema);
+    const valid = validate(reqBody);
     if (!valid) {
         res.send({
             error: {
@@ -27,7 +28,7 @@ app.post('/sendEmail', (req: any, res: any) => {
               }
         });
     }
-    let payload: Email = new Email(reqBody);
+    const payload: Email = new Email(reqBody);
     return emailService.sendEmail(payload)
         .then((response: EmailResponse) => {
             res.send(response);
@@ -37,4 +38,7 @@ app.post('/sendEmail', (req: any, res: any) => {
 app.get('/emailValidation', (req: any, res: any) => {
     res.send(emailValidationSchema);
 });
-exports.api = functions.https.onRequest(app);
+
+app.listen(port, () => {
+    console.log(`Email service app listening on http://localhost:${port}`)
+  })
