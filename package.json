@@ -4,9 +4,8 @@
     "lint": "tslint --project tsconfig.json",
     "build": "tsc",
     "build:watch": "tsc -w",
-    "serve": "npm run build && firebase serve --only functions",
-    "shell": "npm run build && firebase functions:shell",
-    "start": "concurrently \"npm run build:watch\" \"node dist/index.js\""
+    "watch": "concurrently \"npm run build:watch\" \"node dist/index.js\"",
+    "start": "npm run build && node dist/index.js"
   },
   "engines": {
     "node": "10"
