@@ -1,6 +1,7 @@
 import { Email } from "./../models/email";
 import * as sgMail from '@sendgrid/mail';
 import { EmailResponse } from '../models/response';
+import { ResponseError } from '@sendgrid/helpers/classes';
 
 
 class EmailService {
@@ -19,25 +20,26 @@ class EmailService {
       return {
         status: 'success'
       };
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-
-      if (err?.response) {
-        console.error(err.response.body)
-        return {
-          status: 'failure',
-          error: {
-            code: err.code,
-            message: err.message,
-            fullError: err,
-          },
+      if(err instanceof ResponseError){
+        if (err?.response) {
+          console.error(err.response.body)
+          return {
+            status: 'failure',
+            error: {
+              code: err.code,
+              message: err.message,
+              fullError: err,
+            },
+          }
         }
       }
       return {
         status: 'failure',
         error: {
-          code: err.code,
-          message: err.message,
+          code: 500,
+          message: 'Unspecified Error, see fullError',
           fullError: err,
         },
       }

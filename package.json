@@ -6,9 +6,7 @@
     "build:watch": "tsc -w",
     "serve": "npm run build && firebase serve --only functions",
     "shell": "npm run build && firebase functions:shell",
-    "start": "concurrently \"npm run build:watch\" \"node dist/index.js\"",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "start": "concurrently \"npm run build:watch\" \"node dist/index.js\""
   },
   "engines": {
     "node": "10"
