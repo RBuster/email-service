@@ -2,11 +2,10 @@ import * as dotenv from 'dotenv'
 import {emailService} from './lib/resources/emailRA';
 import { Email } from './lib/models/email';
 import * as Ajv from 'ajv';
-import { ResponseCodes } from './lib/const/codes';
 import { emailValidationSchema } from './lib/validation/emailValidationConfig';
 import express = require('express');
 import cors = require('cors');
-import { EmailResponse } from './lib/models/respoinse';
+import { EmailResponse } from './lib/models/response';
 
 dotenv.config();
 
@@ -19,35 +18,34 @@ app.post('/sendEmail', (req: express.Request, res: express.Response, next: expre
     const reqBody = req.body || null;
     if(!reqBody){
         res.send({
+            status: 'failure',
             error: {
-                code: 400,
+                code: 500,
                 message: 'No Payload',
-                status: ResponseCodes.FAILURE
-              }
+                fullError: 'No Payload',
+            }
         });
         throw new Error('No Payload in request')
     }
-    console.info('parsed', reqBody);
     const ajv = new Ajv({allErrors: true});
     const validate = ajv.compile(emailValidationSchema);
     const valid = validate(reqBody);
     if (!valid) {
         res.send({
+            status: 'failure',
             error: {
-                code: 400,
+                code: 500,
                 message: validate.errors,
-                status: ResponseCodes.FAILURE,
                 fullError: validate
-              }
+            }
         });
         throw new Error(validate.errors?.join(', '))
     }
     const payload: Email = new Email(reqBody);
-    console.log(payload);
     return emailService.sendEmail(payload)
         .then((response: EmailResponse) => {
-            if (response.errorMessage) {
-                next(response.errorMessage) // Pass errors to Express.
+            if (response.error) {
+                next(response.error.message) // Pass errors to Express.
             } else {
                 res.send(response)
             }
@@ -59,5 +57,5 @@ app.get('/emailValidation', (req: express.Request, res: express.Response) => {
 });
 
 app.listen(port, () => {
-    console.log(`Email service app listening on http://localhost:${port}`)
+    console.log(`Email service app listening on port ${port}`)
   })
