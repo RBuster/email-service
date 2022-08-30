@@ -1,4 +1,4 @@
-interface EmailResponse{
+export interface EmailResponse{
     status: string;
     errorMessage?: string;
 }
