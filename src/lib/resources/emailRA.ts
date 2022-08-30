@@ -1,42 +1,47 @@
-import { ResponseCodes } from "../const/codes";
 import { Email } from "./../models/email";
-import * as nodemailer from "nodemailer";
+import * as sgMail from '@sendgrid/mail';
+import { EmailResponse } from '../models/response';
+
 
 class EmailService {
-  sendEmail(payload: Email): Promise<any> {
-    // sgMail.setApiKey(process.env.API_KEY || '');
-    // create reusable transporter object using the default SMTP transport
-    const transporter = nodemailer.createTransport({
-      sendmail: true,
-      newline: 'unix',
-    });
-    console.log("Payload", payload);
+  async sendEmail(payload: Email): Promise<EmailResponse> {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
     const msg = {
       from: process.env.FROM_EMAIL || "",
       to: payload.emailAddress,
       subject: payload.subject || "No subject specified",
-      text: 'I hope this message gets delivered!'
+      html: payload.message
+        ? `<p>${payload.message}</p>`
+        : `<p>no message specified</p>`,
     };
-    console.log("Email MSG", msg);
-    return transporter
-      .sendMail(msg)
-      .then((info: any) => {
+    try {
+      await sgMail.send(msg);
+      return {
+        status: 'success'
+      };
+    } catch (err: any) {
+      console.error(err);
+
+      if (err?.response) {
+        console.error(err.response.body)
         return {
-          data: {
-            status: ResponseCodes.SUCCESS,
-          },
-        };
-      })
-      .catch((err: any) => {
-        return {
+          status: 'failure',
           error: {
             code: err.code,
             message: err.message,
-            status: ResponseCodes.FAILURE,
             fullError: err,
           },
-        };
-      });
+        }
+      }
+      return {
+        status: 'failure',
+        error: {
+          code: err.code,
+          message: err.message,
+          fullError: err,
+        },
+      }
+    }
   }
 }
 const emailService = new EmailService();
